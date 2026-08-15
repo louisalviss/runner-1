@@ -1,0 +1,17 @@
+name: temp-inspect-a
+on:
+  push:
+    paths:
+      - '.github/workflows/inspect-a.yml'
+permissions:
+  contents: read
+jobs:
+  pack:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: runner1-a
+          path: a.py
+          retention-days: 1
