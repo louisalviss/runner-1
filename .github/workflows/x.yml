@@ -17,6 +17,7 @@ on:
     paths:
       - ".github/workflows/x.yml"
       - "stock_runner.py"
+      - "stock_runner_entry.py"
       - "requirements.txt"
 
 concurrency:
@@ -40,7 +41,15 @@ jobs:
           cache: pip
 
       - name: Install runtime
-        run: pip install --disable-pip-version-check -r requirements.txt
+        shell: bash
+        run: |
+          mkdir -p diagnostics
+          set +e
+          pip install --disable-pip-version-check -r requirements.txt >diagnostics/runner1_install_stdout.txt 2>diagnostics/runner1_install_stderr.txt
+          rc=$?
+          set -e
+          printf '%s\n' "$rc" > diagnostics/runner1_install_exit_code.txt
+          exit "$rc"
 
       - name: Probe data sources on code change
         if: github.event_name == 'push'
@@ -48,7 +57,7 @@ jobs:
         run: |
           mkdir -p diagnostics
           set +e
-          python stock_runner.py --mode probe >diagnostics/runner1_probe_stdout.txt 2>diagnostics/runner1_probe_stderr.txt
+          python stock_runner_entry.py --mode probe >diagnostics/runner1_probe_stdout.txt 2>diagnostics/runner1_probe_stderr.txt
           rc=$?
           set -e
           printf '%s\n' "$rc" > diagnostics/runner1_probe_exit_code.txt
@@ -74,7 +83,7 @@ jobs:
           fi
           mkdir -p diagnostics
           set +e
-          python stock_runner.py --mode "$MODE" >diagnostics/runner1_last_stdout.txt 2>diagnostics/runner1_last_stderr.txt
+          python stock_runner_entry.py --mode "$MODE" >diagnostics/runner1_last_stdout.txt 2>diagnostics/runner1_last_stderr.txt
           rc=$?
           set -e
           printf '%s\n' "$rc" > diagnostics/runner1_last_exit_code.txt
@@ -89,9 +98,39 @@ jobs:
           git add -A o diagnostics 2>/dev/null || true
           if git diff --cached --quiet; then
             echo "No runner output changes."
+          else
+            git commit -m "data: stock runner checkpoint [skip ci]"
+            for attempt in 1 2 3; do
+              if git pull --rebase origin main && git push origin HEAD:main; then
+                break
+              fi
+              git rebase --abort 2>/dev/null || true
+              if [[ "$attempt" == "3" ]]; then
+                echo "Unable to publish runner outputs after 3 attempts." >&2
+                exit 1
+              fi
+              sleep $((attempt * 3))
+            done
+          fi
+
+      - name: Remove temporary probe cron
+        if: always() && github.event_name == 'schedule' && github.event.schedule == '*/5 * * * *'
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p = Path('.github/workflows/x.yml')
+          text = p.read_text(encoding='utf-8')
+          text = text.replace('    - cron: "*/5 * * * *"\n', '')
+          p.write_text(text, encoding='utf-8')
+          PY
+          git config user.name "wave-rider-stock-runner[bot]"
+          git config user.email "wave-rider-stock-runner[bot]@users.noreply.github.com"
+          git add .github/workflows/x.yml
+          if git diff --cached --quiet; then
             exit 0
           fi
-          git commit -m "data: stock runner checkpoint [skip ci]"
+          git commit -m "test: remove temporary stock probe cron [skip ci]"
           for attempt in 1 2 3; do
             if git pull --rebase origin main && git push origin HEAD:main; then
               exit 0
@@ -99,5 +138,5 @@ jobs:
             git rebase --abort 2>/dev/null || true
             sleep $((attempt * 3))
           done
-          echo "Unable to publish runner outputs after 3 attempts." >&2
+          echo "Unable to remove temporary probe cron." >&2
           exit 1
