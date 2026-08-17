@@ -1,0 +1,82 @@
+name: WR Day Holiday Sensitivity Temp
+
+on:
+  push:
+    branches: [wr-day-holiday-runner-temp]
+    paths:
+      - '.github/workflows/wr-day-holiday-runner-temp.yml'
+
+permissions:
+  contents: read
+  actions: write
+
+jobs:
+  sensitivity:
+    strategy:
+      fail-fast: false
+      max-parallel: 6
+      matrix:
+        symbol: [SOLUSDT, ETHUSDT, XRPUSDT, BTCUSDT, BNBUSDT, DOGEUSDT, ADAUSDT, AVAXUSDT, LINKUSDT, DOTUSDT, BCHUSDT, LTCUSDT, TRXUSDT, AAVEUSDT, NEARUSDT, SUIUSDT, WIFUSDT, 1000PEPEUSDT]
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          repository: louisalviss/runner-3
+          ref: wr-day-holiday-temp
+          path: source
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install --disable-pip-version-check requests
+      - name: Run 5m NYSE-holiday-aware Day sensitivity
+        working-directory: source
+        env:
+          WR_SYMBOL: ${{ matrix.symbol }}
+          WR_START: '2025-01-01'
+          WR_END: '2026-08-14'
+        run: python wave-rider-day-sensitivity/holiday_sensitivity.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: wr-day-holiday-${{ matrix.symbol }}
+          path: source/wave-rider-day-sensitivity/output/${{ matrix.symbol }}.json
+          retention-days: 1
+          if-no-files-found: error
+
+  aggregate:
+    needs: sensitivity
+    if: always() && needs.sensitivity.result == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          repository: louisalviss/runner-3
+          ref: wr-day-holiday-temp
+          path: source
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: wr-day-holiday-*
+          path: source/wave-rider-day-sensitivity/output
+          merge-multiple: true
+      - name: Build private compact aggregate
+        working-directory: source
+        env:
+          WR_AGGREGATE: '1'
+          WR_START: '2025-01-01'
+          WR_END: '2026-08-14'
+        run: python wave-rider-day-sensitivity/holiday_sensitivity.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: wr-day-holiday-aggregate
+          path: source/wave-rider-day-sensitivity/output/holiday_aggregate.json
+          retention-days: 1
+          if-no-files-found: error
+      - name: Delete per-symbol transient artifacts
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          for id in $(gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}/artifacts?per_page=100" --jq '.artifacts[] | select(.name | startswith("wr-day-holiday-")) | select(.name != "wr-day-holiday-aggregate") | .id'); do
+            gh api --method DELETE "repos/${GITHUB_REPOSITORY}/actions/artifacts/${id}"
+          done
+          echo "per-symbol artifacts cleaned"
