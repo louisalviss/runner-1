@@ -1,1 +1,0 @@
-Issue-trigger probe is the authoritative runtime test; this file exists only to make the test state visible.
