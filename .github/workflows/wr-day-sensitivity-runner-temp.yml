@@ -1,0 +1,68 @@
+name: WR Day Sensitivity Runner Temp
+
+on:
+  push:
+    branches: [wr-day-sensitivity-runner-temp]
+    paths:
+      - '.github/workflows/wr-day-sensitivity-runner-temp.yml'
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  sensitivity:
+    strategy:
+      fail-fast: false
+      max-parallel: 6
+      matrix:
+        symbol: [SOLUSDT, ETHUSDT, XRPUSDT, BTCUSDT, BNBUSDT, DOGEUSDT, ADAUSDT, AVAXUSDT, LINKUSDT, DOTUSDT, BCHUSDT, LTCUSDT, TRXUSDT, AAVEUSDT, NEARUSDT, SUIUSDT, WIFUSDT, 1000PEPEUSDT]
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          repository: louisalviss/runner-3
+          ref: wr-day-sensitivity-temp2
+          path: source
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install --disable-pip-version-check requests
+      - name: Run 5m Day sensitivity
+        working-directory: source
+        env:
+          WR_SYMBOL: ${{ matrix.symbol }}
+          WR_START: '2025-01-01'
+          WR_END: '2026-08-14'
+        run: python wave-rider-day-sensitivity/day_sensitivity.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: wr-day-sens-${{ matrix.symbol }}
+          path: source/wave-rider-day-sensitivity/output/${{ matrix.symbol }}.json
+          retention-days: 1
+          if-no-files-found: error
+
+  aggregate:
+    needs: sensitivity
+    if: always() && needs.sensitivity.result == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          repository: louisalviss/runner-3
+          ref: wr-day-sensitivity-temp2
+          path: source
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: wr-day-sens-*
+          path: source/wave-rider-day-sensitivity/output
+          merge-multiple: true
+      - name: Print compact aggregate summary
+        working-directory: source
+        env:
+          WR_AGGREGATE: '1'
+          WR_START: '2025-01-01'
+          WR_END: '2026-08-14'
+        run: python wave-rider-day-sensitivity/day_sensitivity.py
