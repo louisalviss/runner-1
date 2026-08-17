@@ -1,4 +1,5 @@
-name: x
+name: Wave Rider Stock Public Runner
+
 on:
   workflow_dispatch:
     inputs:
@@ -12,72 +13,85 @@ on:
     - cron: "15 22 * * 1-5"
   push:
     branches: [main]
-    paths: [".github/workflows/x.yml"]
+    paths:
+      - ".github/workflows/x.yml"
+      - "stock_runner.py"
+      - "requirements.txt"
+
 concurrency:
-  group: x
+  group: wave-rider-stock-public
   cancel-in-progress: false
+
 jobs:
-  x:
-    if: github.event_name != 'push' && (github.event_name != 'workflow_dispatch' || inputs.m != '9')
+  stock:
     permissions:
       contents: write
     runs-on: ubuntu-latest
     timeout-minutes: 90
     steps:
       - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09
+        with:
+          fetch-depth: 0
+
       - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1
         with:
           python-version: "3.12"
-      - shell: bash
+          cache: pip
+
+      - name: Install runtime
+        run: pip install --disable-pip-version-check -r requirements.txt
+
+      - name: Probe data sources on code change
+        if: github.event_name == 'push'
+        shell: bash
         run: |
-          python a.py 7 >/tmp/r
-          pip install --no-input -r /tmp/r
-      - shell: bash
-        env:
-          M: ${{ github.event_name == 'schedule' && '0' || inputs.m }}
-        run: |
+          mkdir -p diagnostics
           set +e
-          python a.py "$M"
-          x=$?
+          python stock_runner.py --mode probe >diagnostics/runner1_probe_stdout.txt 2>diagnostics/runner1_probe_stderr.txt
+          rc=$?
           set -e
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add -A o 2>/dev/null || true
-          if ! git diff --cached --quiet; then git commit -m ". [skip ci]" && git push; fi
-          exit "$x"
-  c:
-    if: github.event_name == 'push' && github.event.head_commit.message == 'c'
-    permissions:
-      contents: write
-      actions: write
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09
-        with:
-          fetch-depth: 0
-      - shell: bash
+          printf '%s\n' "$rc" > diagnostics/runner1_probe_exit_code.txt
+          exit "$rc"
+
+      - name: Run production checkpoint
+        if: github.event_name != 'push'
+        shell: bash
         env:
-          T: ${{ github.token }}
+          M: ${{ github.event_name == 'schedule' && '8' || inputs.m }}
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git checkout --orphan z
-          git add -A
-          git commit -m "."
-          git branch -M main
-          git push --force origin main
-          sleep 5
-          curl -fsSL -X POST -H "Authorization: Bearer ${T}" -H "Accept: application/vnd.github+json" "https://api.github.com/repos/${GITHUB_REPOSITORY}/actions/workflows/x.yml/dispatches" -d '{"ref":"main","inputs":{"m":"9"}}'
-  q:
-    if: github.event_name == 'workflow_dispatch' && inputs.m == '9'
-    permissions:
-      actions: write
-      contents: read
-    runs-on: ubuntu-latest
-    steps:
-      - shell: bash
-        env:
-          T: ${{ github.token }}
+          case "$M" in
+            1) MODE=main ;;
+            2) MODE=mid ;;
+            3) MODE=preclose ;;
+            4) MODE=smoothness ;;
+            8|*) MODE=auto ;;
+          esac
+          mkdir -p diagnostics
+          set +e
+          python stock_runner.py --mode "$MODE" >diagnostics/runner1_last_stdout.txt 2>diagnostics/runner1_last_stderr.txt
+          rc=$?
+          set -e
+          printf '%s\n' "$rc" > diagnostics/runner1_last_exit_code.txt
+          exit "$rc"
+
+      - name: Persist outputs and diagnostics
+        if: always()
+        shell: bash
         run: |
-          ids=$(curl -fsSL -H "Authorization: Bearer ${T}" -H "Accept: application/vnd.github+json" "https://api.github.com/repos/${GITHUB_REPOSITORY}/actions/runs?per_page=100" | jq -r --arg s "$GITHUB_RUN_ID" '.workflow_runs[]|select(.status=="completed")|select((.id|tostring)!=$s)|.id')
-          for id in $ids; do curl -fsSL -X DELETE -H "Authorization: Bearer ${T}" -H "Accept: application/vnd.github+json" "https://api.github.com/repos/${GITHUB_REPOSITORY}/actions/runs/${id}" || true; done
+          git config user.name "wave-rider-stock-runner[bot]"
+          git config user.email "wave-rider-stock-runner[bot]@users.noreply.github.com"
+          git add -A o diagnostics 2>/dev/null || true
+          if git diff --cached --quiet; then
+            echo "No runner output changes."
+            exit 0
+          fi
+          git commit -m "data: stock runner checkpoint [skip ci]"
+          for attempt in 1 2 3; do
+            if git pull --rebase origin main && git push origin HEAD:main; then
+              exit 0
+            fi
+            git rebase --abort 2>/dev/null || true
+            sleep $((attempt * 3))
+          done
+          echo "Unable to publish runner outputs after 3 attempts." >&2
+          exit 1
