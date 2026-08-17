@@ -6,10 +6,7 @@ on:
       m:
         required: false
         default: "8"
-  issues:
-    types: [opened]
   schedule:
-    - cron: "*/5 * * * *"
     - cron: "0 14,15 * * 1-5"
     - cron: "45 16,17 * * 1-5"
     - cron: "45 19,20 * * 1-5"
@@ -28,7 +25,6 @@ concurrency:
 
 jobs:
   stock:
-    if: github.event_name != 'issues' || github.event.issue.title == '[runner1-probe]'
     permissions:
       contents: write
     runs-on: ubuntu-latest
@@ -55,7 +51,7 @@ jobs:
           exit "$rc"
 
       - name: Probe data sources on code change
-        if: github.event_name == 'push' || github.event_name == 'issues'
+        if: github.event_name == 'push'
         shell: bash
         run: |
           mkdir -p diagnostics
@@ -66,24 +62,19 @@ jobs:
           printf '%s\n' "$rc" > diagnostics/runner1_probe_exit_code.txt
           exit "$rc"
 
-      - name: Run scheduled or manual checkpoint
-        if: github.event_name != 'push' && github.event_name != 'issues'
+      - name: Run production checkpoint
+        if: github.event_name != 'push'
         shell: bash
         env:
           M: ${{ github.event_name == 'schedule' && '8' || inputs.m }}
-          EVENT_SCHEDULE: ${{ github.event.schedule }}
         run: |
-          if [[ "$EVENT_SCHEDULE" == "*/5 * * * *" ]]; then
-            MODE=probe
-          else
-            case "$M" in
-              1) MODE=main ;;
-              2) MODE=mid ;;
-              3) MODE=preclose ;;
-              4) MODE=smoothness ;;
-              8|*) MODE=auto ;;
-            esac
-          fi
+          case "$M" in
+            1) MODE=main ;;
+            2) MODE=mid ;;
+            3) MODE=preclose ;;
+            4) MODE=smoothness ;;
+            8|*) MODE=auto ;;
+          esac
           mkdir -p diagnostics
           set +e
           python stock_runner_entry.py --mode "$MODE" >diagnostics/runner1_last_stdout.txt 2>diagnostics/runner1_last_stderr.txt
@@ -101,39 +92,9 @@ jobs:
           git add -A o diagnostics 2>/dev/null || true
           if git diff --cached --quiet; then
             echo "No runner output changes."
-          else
-            git commit -m "data: stock runner checkpoint [skip ci]"
-            for attempt in 1 2 3; do
-              if git pull --rebase origin main && git push origin HEAD:main; then
-                break
-              fi
-              git rebase --abort 2>/dev/null || true
-              if [[ "$attempt" == "3" ]]; then
-                echo "Unable to publish runner outputs after 3 attempts." >&2
-                exit 1
-              fi
-              sleep $((attempt * 3))
-            done
-          fi
-
-      - name: Remove temporary probe cron
-        if: always() && github.event_name == 'schedule' && github.event.schedule == '*/5 * * * *'
-        shell: bash
-        run: |
-          python - <<'PY'
-          from pathlib import Path
-          p = Path('.github/workflows/x.yml')
-          text = p.read_text(encoding='utf-8')
-          text = text.replace('    - cron: "*/5 * * * *"\n', '')
-          p.write_text(text, encoding='utf-8')
-          PY
-          git config user.name "wave-rider-stock-runner[bot]"
-          git config user.email "wave-rider-stock-runner[bot]@users.noreply.github.com"
-          git add .github/workflows/x.yml
-          if git diff --cached --quiet; then
             exit 0
           fi
-          git commit -m "test: remove temporary stock probe cron [skip ci]"
+          git commit -m "data: stock runner checkpoint [skip ci]"
           for attempt in 1 2 3; do
             if git pull --rebase origin main && git push origin HEAD:main; then
               exit 0
@@ -141,5 +102,5 @@ jobs:
             git rebase --abort 2>/dev/null || true
             sleep $((attempt * 3))
           done
-          echo "Unable to remove temporary probe cron." >&2
+          echo "Unable to publish runner outputs after 3 attempts." >&2
           exit 1
