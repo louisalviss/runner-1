@@ -6,6 +6,8 @@ on:
       m:
         required: false
         default: "8"
+  issues:
+    types: [opened]
   schedule:
     - cron: "*/5 * * * *"
     - cron: "0 14,15 * * 1-5"
@@ -26,6 +28,7 @@ concurrency:
 
 jobs:
   stock:
+    if: github.event_name != 'issues' || github.event.issue.title == '[runner1-probe]'
     permissions:
       contents: write
     runs-on: ubuntu-latest
@@ -52,7 +55,7 @@ jobs:
           exit "$rc"
 
       - name: Probe data sources on code change
-        if: github.event_name == 'push'
+        if: github.event_name == 'push' || github.event_name == 'issues'
         shell: bash
         run: |
           mkdir -p diagnostics
@@ -64,7 +67,7 @@ jobs:
           exit "$rc"
 
       - name: Run scheduled or manual checkpoint
-        if: github.event_name != 'push'
+        if: github.event_name != 'push' && github.event_name != 'issues'
         shell: bash
         env:
           M: ${{ github.event_name == 'schedule' && '8' || inputs.m }}
