@@ -26,8 +26,8 @@ x = datetime.now(timezone.utc).astimezone(ZoneInfo('America/New_York'))
 print(x.hour, x.minute)
 PY
 )"
-  if [[ "$event_schedule" == "0 14 * * 1-5" || "$event_schedule" == "0 15 * * 1-5" ]]; then
-    [[ "$et_hour" == "10" ]] && mode=main || mode=noop
+  if [[ "$event_schedule" == "30 14 * * 1-5" || "$event_schedule" == "30 15 * * 1-5" ]]; then
+    [[ "$et_hour" == "10" && "$et_minute" -ge 30 ]] && mode=main || mode=noop
   elif [[ "$event_schedule" == "45 16 * * 1-5" || "$event_schedule" == "45 17 * * 1-5" ]]; then
     [[ "$et_hour" == "12" && "$et_minute" -ge 45 ]] && mode=mid || mode=noop
   elif [[ "$event_schedule" == "45 19 * * 1-5" || "$event_schedule" == "45 20 * * 1-5" ]]; then
