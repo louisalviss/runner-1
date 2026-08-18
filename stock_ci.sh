@@ -92,7 +92,10 @@ printf '%s\n' "$(date -u +%FT%TZ)" > diagnostics/runner1_finished_utc.txt
 remote_mark "40-persist-start" "rc=$rc"
 git config user.name "wave-rider-stock-runner[bot]"
 git config user.email "wave-rider-stock-runner[bot]@users.noreply.github.com"
-git add -A o diagnostics 2>/dev/null || true
+git add -A diagnostics
+if [[ -d o ]]; then
+  git add -A o
+fi
 if ! git diff --cached --quiet; then
   git commit -m "data: Stock runner-1 state [skip ci]"
   pushed=0
