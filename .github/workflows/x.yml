@@ -21,8 +21,8 @@ on:
     - cron: "45 17 * * 1-5"
     - cron: "45 19 * * 1-5"
     - cron: "45 20 * * 1-5"
+    # 22:15 UTC Monday-Friday = 05:15 Asia/Ho_Chi_Minh Tuesday-Saturday year-round.
     - cron: "15 22 * * 1-5"
-    - cron: "15 23 * * 1-5"
 
 concurrency:
   group: wave-rider-stock-runner-1
