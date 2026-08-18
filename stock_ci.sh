@@ -6,6 +6,9 @@ mkdir -p diagnostics
 remote_mark() {
   local phase="$1"
   local text="$2"
+  if [[ "${EVENT_NAME:-}" != "issues" && "${EVENT_NAME:-}" != "push" ]]; then
+    return 0
+  fi
   if [[ -z "${GH_TOKEN:-}" || -z "${REPO:-}" || -z "${RUN_ID:-}" ]]; then
     return 0
   fi
