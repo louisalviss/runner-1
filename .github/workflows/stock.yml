@@ -6,8 +6,6 @@ on:
       m:
         required: false
         default: "8"
-  issues:
-    types: [opened]
   push:
     branches: [main]
     paths:
@@ -32,7 +30,6 @@ concurrency:
 
 jobs:
   stock:
-    if: github.event_name != 'issues' || github.event.issue.title == '[runner1-stock-probe]'
     permissions:
       contents: write
     runs-on: ubuntu-latest
