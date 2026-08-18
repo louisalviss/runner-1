@@ -1,0 +1,59 @@
+name: Recovery Stock Main 2026-08-18
+
+on:
+  issues:
+    types: [opened]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: wave-rider-stock-runner-1
+  cancel-in-progress: false
+
+jobs:
+  recover:
+    if: github.event.issue.title == '[wr-recovery-stock-main-20260818]'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with:
+          python-version: '3.12'
+      - name: Install runtime
+        run: python -m pip install --disable-pip-version-check -r requirements.txt
+      - name: Replace early Main checkpoint and rescan
+        shell: bash
+        run: |
+          mkdir -p diagnostics
+          python - <<'PY'
+          from datetime import datetime, timezone
+          import stock_runner as r
+          session = datetime.now(timezone.utc).astimezone(r.NY).date().isoformat()
+          live = r.read_slot('0')
+          if not live or live.get('session_date_us') != session:
+              raise SystemExit(f'No current Stock session state for {session}')
+          cps = live.get('checkpoints', [])
+          live['checkpoints'] = [x for x in cps if not (isinstance(x, dict) and x.get('mode') == 'main' and x.get('status') == 'COMPLETE')]
+          r.write_slot('0', live)
+          print(f"removed_main_complete={len(cps)-len(live['checkpoints'])} session={session}")
+          PY
+          set +e
+          python stock_runner_entry.py --mode main >diagnostics/recovery_stock_main_stdout.txt 2>diagnostics/recovery_stock_main_stderr.txt
+          rc=$?
+          set -e
+          printf '%s\n' "$rc" > diagnostics/recovery_stock_main_exit_code.txt
+          date -u +%FT%TZ > diagnostics/recovery_stock_main_finished_utc.txt
+          git config user.name 'wave-rider-stock-recovery[bot]'
+          git config user.email 'wave-rider-stock-recovery[bot]@users.noreply.github.com'
+          git add -A o diagnostics
+          git commit -m 'data: recover Stock main after open+1h correction [skip ci]' || true
+          for attempt in 1 2 3 4 5; do
+            if git pull --rebase origin main && git push origin HEAD:main; then break; fi
+            git rebase --abort 2>/dev/null || true
+            sleep $((attempt*2))
+          done
+          exit "$rc"
