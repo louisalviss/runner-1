@@ -1,7 +1,7 @@
 {
   "mode": "probe",
   "ok": true,
-  "generated_utc": "2026-08-18T02:29:51.876872+00:00",
+  "generated_utc": "2026-08-18T02:50:17.830540+00:00",
   "stage1_qualified_count": 370,
   "stage1_diagnostics": {
     "total_count": 5826,
