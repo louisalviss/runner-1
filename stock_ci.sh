@@ -29,9 +29,9 @@ PY
   if [[ "$event_schedule" == "0 14 * * 1-5" || "$event_schedule" == "0 15 * * 1-5" ]]; then
     [[ "$et_hour" == "10" ]] && mode=main || mode=noop
   elif [[ "$event_schedule" == "45 16 * * 1-5" || "$event_schedule" == "45 17 * * 1-5" ]]; then
-    [[ "$et_hour" == "12" && "$et_minute" == "45" ]] && mode=mid || mode=noop
+    [[ "$et_hour" == "12" && "$et_minute" -ge 45 ]] && mode=mid || mode=noop
   elif [[ "$event_schedule" == "45 19 * * 1-5" || "$event_schedule" == "45 20 * * 1-5" ]]; then
-    [[ "$et_hour" == "15" && "$et_minute" == "45" ]] && mode=preclose || mode=noop
+    [[ "$et_hour" == "15" && "$et_minute" -ge 45 ]] && mode=preclose || mode=noop
   elif [[ "$event_schedule" == "15 22 * * 1-5" ]]; then
     # Canonical post-close schedule is fixed in Vietnam time, not New York time.
     # 22:15 UTC Monday-Friday = 05:15 Asia/Ho_Chi_Minh Tuesday-Saturday year-round.
