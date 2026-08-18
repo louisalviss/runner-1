@@ -15,8 +15,8 @@ on:
       - "stock_runner_entry.py"
       - "requirements.txt"
   schedule:
-    - cron: "0 14 * * 1-5"
-    - cron: "0 15 * * 1-5"
+    - cron: "30 14 * * 1-5"
+    - cron: "30 15 * * 1-5"
     - cron: "45 16 * * 1-5"
     - cron: "45 17 * * 1-5"
     - cron: "45 19 * * 1-5"
