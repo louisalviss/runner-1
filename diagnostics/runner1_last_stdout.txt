@@ -1,7 +1,17 @@
 {
-  "mode": "mid",
-  "action": "published",
-  "session_date_us": "2026-08-18",
-  "qualified_count": 354,
-  "union_count": 357
+  "mode": "probe",
+  "ok": true,
+  "generated_utc": "2026-08-18T16:48:55.554556+00:00",
+  "stage1_qualified_count": 354,
+  "stage1_diagnostics": {
+    "total_count": 5823,
+    "parsed_count": 5823,
+    "exchange_counts": {
+      "NASDAQ": 3517,
+      "NYSE": 2306
+    }
+  },
+  "bar_probe_symbol": "MSFT",
+  "bar_probe_count": 150,
+  "bar_probe_session_date_us": "2026-08-18"
 }
