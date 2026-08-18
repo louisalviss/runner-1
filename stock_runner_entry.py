@@ -70,15 +70,17 @@ def canonical_auto_mode() -> str:
     """Resolve backup/manual auto without ever firing a checkpoint early.
 
     The Cloudflare backup intentionally watches broad windows. This guard makes
-    the public Stock producer authoritative on the exact methodology times:
-    10:00 ET, 12:45 ET, 15:45 ET, and 05:15 VN post-close. Backup dispatches
-    before those times become harmless no-ops and can retry after the target.
+    the public Stock producer authoritative on the methodology times:
+    Main starts at 10:30 ET (one hour after the 09:30 open) and may retry until
+    11:15 ET; Mid starts at 12:45 ET; Preclose starts at 15:45 ET; Smoothness
+    runs at 05:15 VN post-close. Backup dispatches before those targets cannot
+    mutate canonical state early.
     """
     now = runner.now_utc()
     if runner.market_open_now(now):
         et = now.astimezone(runner.NY)
         minute = et.hour * 60 + et.minute
-        if 10 * 60 <= minute <= 10 * 60 + 12:
+        if 10 * 60 + 30 <= minute <= 11 * 60 + 15:
             return "main"
         if 12 * 60 + 45 <= minute <= 12 * 60 + 57:
             return "mid"
