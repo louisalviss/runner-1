@@ -1,0 +1,51 @@
+name: Wave Rider Stock Runner 1
+
+on:
+  workflow_dispatch:
+    inputs:
+      m:
+        required: false
+        default: "8"
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/x.yml"
+      - "stock_ci.sh"
+      - "stock_runner.py"
+      - "stock_runner_entry.py"
+      - "requirements.txt"
+  schedule:
+    - cron: "0 14 * * 1-5"
+    - cron: "0 15 * * 1-5"
+    - cron: "45 16 * * 1-5"
+    - cron: "45 17 * * 1-5"
+    - cron: "45 19 * * 1-5"
+    - cron: "45 20 * * 1-5"
+    - cron: "15 22 * * 1-5"
+    - cron: "15 23 * * 1-5"
+
+concurrency:
+  group: wave-rider-stock-runner-1
+  cancel-in-progress: false
+
+jobs:
+  stock:
+    permissions:
+      contents: write
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - name: Run Stock only on runner-1
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          RUN_ID: ${{ github.run_id }}
+          EVENT_NAME: ${{ github.event_name }}
+          EVENT_SCHEDULE: ${{ github.event.schedule }}
+          INPUT_M: ${{ inputs.m }}
+        run: |
+          set -euo pipefail
+          git clone --quiet "https://x-access-token:${GH_TOKEN}@github.com/${REPO}.git" work
+          cd work
+          bash stock_ci.sh
