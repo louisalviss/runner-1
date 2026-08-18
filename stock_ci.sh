@@ -16,7 +16,25 @@ elif [[ "$event_name" == "workflow_dispatch" ]]; then
     2) mode=mid ;;
     3) mode=preclose ;;
     4) mode=smoothness ;;
-    8|*) mode=auto ;;
+    8|*)
+      read et_hour et_minute wait_seconds <<<"$(python3 - <<'PY'
+from datetime import datetime, timezone
+from zoneinfo import ZoneInfo
+x = datetime.now(timezone.utc).astimezone(ZoneInfo('America/New_York'))
+minute = x.hour * 60 + x.minute
+wait = 0
+if 9 * 60 + 30 <= minute < 10 * 60 + 30:
+    target = x.replace(hour=10, minute=30, second=0, microsecond=0)
+    wait = max(0, int((target - x).total_seconds()))
+print(x.hour, x.minute, wait)
+PY
+)"
+      if [[ "$wait_seconds" -gt 0 ]]; then
+        printf '%s\n' "$wait_seconds" > diagnostics/runner1_wait_seconds.txt
+        sleep "$wait_seconds"
+      fi
+      mode=auto
+      ;;
   esac
 else
   read et_hour et_minute <<<"$(python3 - <<'PY'
