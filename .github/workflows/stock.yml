@@ -1,148 +1,31 @@
 name: Wave Rider Stock Runner 1
 
 on:
-  workflow_dispatch:
-    inputs:
-      m:
-        description: "1=main 2=mid 3=preclose 4=smoothness 8=auto"
-        required: false
-        default: "8"
   issues:
     types: [opened]
-  push:
-    branches: [main]
-    paths:
-      - ".github/workflows/stock.yml"
-      - "stock_runner.py"
-      - "stock_runner_entry.py"
-      - "requirements.txt"
-  schedule:
-    - cron: "0 14 * * 1-5"
-    - cron: "0 15 * * 1-5"
-    - cron: "45 16 * * 1-5"
-    - cron: "45 17 * * 1-5"
-    - cron: "45 19 * * 1-5"
-    - cron: "45 20 * * 1-5"
-    - cron: "15 22 * * 1-5"
-    - cron: "15 23 * * 1-5"
-
-concurrency:
-  group: wave-rider-stock-runner-1
-  cancel-in-progress: false
+  workflow_dispatch:
 
 jobs:
   stock:
-    if: github.event_name != 'issues' || github.event.issue.title == '[runner1-stock-probe]'
+    if: github.event.issue.title == '[runner1-stock-probe]' || github.event_name == 'workflow_dispatch'
     permissions:
       contents: write
     runs-on: ubuntu-latest
-    timeout-minutes: 90
     steps:
-      - name: Mark workflow start
+      - name: Mark Stock workflow
         shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
           REPO: ${{ github.repository }}
           RUN_ID: ${{ github.run_id }}
-          EVENT_NAME: ${{ github.event_name }}
         run: |
           set -euo pipefail
-          body="stock-start run=$RUN_ID event=$EVENT_NAME at=$(date -u +%FT%TZ)"
+          body="stock-minimal run=$RUN_ID at=$(date -u +%FT%TZ)"
           encoded="$(printf '%s\n' "$body" | base64 -w0)"
-          payload="$(printf '{\"message\":\"debug: mark Stock workflow start [skip ci]\",\"content\":\"%s\"}' "$encoded")"
+          payload="$(printf '{\"message\":\"debug: minimal Stock workflow [skip ci]\",\"content\":\"%s\"}' "$encoded")"
           curl --fail-with-body -sS -X PUT \
             -H "Accept: application/vnd.github+json" \
             -H "Authorization: Bearer $GH_TOKEN" \
             -H "X-GitHub-Api-Version: 2022-11-28" \
-            "https://api.github.com/repos/$REPO/contents/diagnostics/stock-start-${RUN_ID}.txt" \
+            "https://api.github.com/repos/$REPO/contents/diagnostics/stock-minimal-${RUN_ID}.txt" \
             -d "$payload"
-
-      - name: Run Stock only on runner-1
-        shell: bash
-        env:
-          GH_TOKEN: ${{ github.token }}
-          REPO: ${{ github.repository }}
-          EVENT_NAME: ${{ github.event_name }}
-          EVENT_SCHEDULE: ${{ github.event.schedule }}
-          INPUT_M: ${{ inputs.m }}
-        run: |
-          set -u
-          rm -rf work
-          git clone --quiet "https://x-access-token:${GH_TOKEN}@github.com/${REPO}.git" work
-          cd work
-          git config user.name "wave-rider-stock-runner[bot]"
-          git config user.email "wave-rider-stock-runner[bot]@users.noreply.github.com"
-          mkdir -p diagnostics
-
-          MODE=""
-          if [[ "$EVENT_NAME" == "push" || "$EVENT_NAME" == "issues" ]]; then
-            MODE=probe
-          elif [[ "$EVENT_NAME" == "workflow_dispatch" ]]; then
-            case "${INPUT_M:-8}" in
-              1) MODE=main ;;
-              2) MODE=mid ;;
-              3) MODE=preclose ;;
-              4) MODE=smoothness ;;
-              8|*) MODE=auto ;;
-            esac
-          else
-            read ET_HOUR ET_MINUTE <<<"$(python3 - <<'PY'
-from datetime import datetime, timezone
-from zoneinfo import ZoneInfo
-x=datetime.now(timezone.utc).astimezone(ZoneInfo('America/New_York'))
-print(x.hour, x.minute)
-PY
-)"
-            if [[ "$EVENT_SCHEDULE" == "0 14 * * 1-5" || "$EVENT_SCHEDULE" == "0 15 * * 1-5" ]]; then
-              [[ "$ET_HOUR" == "10" ]] && MODE=main || MODE=noop
-            elif [[ "$EVENT_SCHEDULE" == "45 16 * * 1-5" || "$EVENT_SCHEDULE" == "45 17 * * 1-5" ]]; then
-              [[ "$ET_HOUR" == "12" && "$ET_MINUTE" == "45" ]] && MODE=mid || MODE=noop
-            elif [[ "$EVENT_SCHEDULE" == "45 19 * * 1-5" || "$EVENT_SCHEDULE" == "45 20 * * 1-5" ]]; then
-              [[ "$ET_HOUR" == "15" && "$ET_MINUTE" == "45" ]] && MODE=preclose || MODE=noop
-            elif [[ "$EVENT_SCHEDULE" == "15 22 * * 1-5" || "$EVENT_SCHEDULE" == "15 23 * * 1-5" ]]; then
-              [[ "$ET_HOUR" == "18" && "$ET_MINUTE" == "15" ]] && MODE=smoothness || MODE=noop
-            else
-              MODE=noop
-            fi
-          fi
-
-          printf '%s\n' "$MODE" > diagnostics/runner1_resolved_mode.txt
-          printf '%s\n' "$(date -u +%FT%TZ)" > diagnostics/runner1_started_utc.txt
-          printf '%s\n' "$EVENT_NAME" > diagnostics/runner1_event_name.txt
-          printf '%s\n' "$EVENT_SCHEDULE" > diagnostics/runner1_event_schedule.txt
-
-          rc=0
-          if [[ "$MODE" != "noop" ]]; then
-            set +e
-            python3 -m pip install --disable-pip-version-check -r requirements.txt >diagnostics/runner1_install_stdout.txt 2>diagnostics/runner1_install_stderr.txt
-            install_rc=$?
-            printf '%s\n' "$install_rc" > diagnostics/runner1_install_exit_code.txt
-            if [[ "$install_rc" != "0" ]]; then
-              rc=$install_rc
-            else
-              python3 stock_runner_entry.py --mode "$MODE" >diagnostics/runner1_last_stdout.txt 2>diagnostics/runner1_last_stderr.txt
-              rc=$?
-            fi
-            set -e
-          fi
-          printf '%s\n' "$rc" > diagnostics/runner1_last_exit_code.txt
-          printf '%s\n' "$(date -u +%FT%TZ)" > diagnostics/runner1_finished_utc.txt
-
-          git add -A o diagnostics 2>/dev/null || true
-          if ! git diff --cached --quiet; then
-            git commit -m "data: Stock runner-1 state [skip ci]"
-            pushed=0
-            for attempt in 1 2 3 4 5; do
-              if git pull --rebase origin main && git push origin HEAD:main; then
-                pushed=1
-                break
-              fi
-              git rebase --abort 2>/dev/null || true
-              sleep $((attempt * 2))
-            done
-            if [[ "$pushed" != "1" ]]; then
-              echo "Failed to persist runner-1 state" >&2
-              exit 91
-            fi
-          fi
-          exit "$rc"
