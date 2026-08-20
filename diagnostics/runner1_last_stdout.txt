@@ -1,7 +1,6 @@
 {
   "mode": "mid",
-  "action": "published",
+  "action": "already-complete",
   "session_date_us": "2026-08-20",
-  "qualified_count": 353,
   "union_count": 355
 }
