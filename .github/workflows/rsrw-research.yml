@@ -6,6 +6,7 @@ on:
     paths:
       - ".github/workflows/rsrw-research.yml"
       - "research/rsrw_backtest.py"
+      - "research/rsrw_trigger.txt"
 
 concurrency:
   group: wave-rider-rsrw-research
