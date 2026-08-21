@@ -1,0 +1,38 @@
+name: Wave Rider RS-RW Research
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/rsrw-research.yml"
+      - "research/rsrw_backtest.py"
+
+concurrency:
+  group: wave-rider-rsrw-research
+  cancel-in-progress: true
+
+jobs:
+  backtest:
+    permissions:
+      contents: write
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Run parity-checked RS/RW A-B
+        run: python research/rsrw_backtest.py
+      - name: Persist result
+        shell: bash
+        run: |
+          git config user.name "wave-rider-research[bot]"
+          git config user.email "wave-rider-research[bot]@users.noreply.github.com"
+          git add research/rsrw_result.json
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m "research: RS-RW preliminary result [skip ci]"
+          git pull --rebase origin main
+          git push origin HEAD:main
