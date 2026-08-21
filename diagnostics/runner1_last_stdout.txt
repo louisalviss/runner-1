@@ -1,4 +1,7 @@
 {
-  "mode": "noop",
-  "action": "outside-canonical-window"
+  "mode": "mid",
+  "action": "published",
+  "session_date_us": "2026-08-21",
+  "qualified_count": 359,
+  "union_count": 361
 }
