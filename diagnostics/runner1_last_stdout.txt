@@ -1,6 +1,4 @@
 {
-  "mode": "main",
-  "action": "already-complete",
-  "session_date_us": "2026-08-21",
-  "union_count": 357
+  "mode": "noop",
+  "action": "outside-canonical-window"
 }
