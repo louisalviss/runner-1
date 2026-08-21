@@ -6,12 +6,14 @@ on:
     paths:
       - ".github/workflows/rsrw-research.yml"
       - "research/rsrw_backtest.py"
+      - "research/rsrw_backtest_vision.py"
       - "research/rsrw_trigger.txt"
   pull_request:
     branches: [main]
     paths:
       - "research/rsrw_trigger.txt"
       - "research/rsrw_backtest.py"
+      - "research/rsrw_backtest_vision.py"
 
 concurrency:
   group: wave-rider-rsrw-research-${{ github.event.pull_request.number || github.ref }}
@@ -31,7 +33,7 @@ jobs:
         with:
           python-version: "3.12"
       - name: Run parity-checked RS/RW A-B
-        run: python research/rsrw_backtest.py
+        run: python research/rsrw_backtest_vision.py
       - name: Upload research result
         uses: actions/upload-artifact@v4
         with:
