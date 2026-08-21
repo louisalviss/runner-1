@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import csv
 import io
+import inspect
 import time
 import zipfile
 from datetime import datetime, timezone, timedelta
@@ -18,7 +19,7 @@ def fetch_bytes(url, retries=4):
     last = None
     for k in range(retries):
         try:
-            req = Request(url, headers={"User-Agent": "wr-rsrw-research/1.1"})
+            req = Request(url, headers={"User-Agent": "wr-rsrw-research/1.2"})
             with urlopen(req, timeout=30) as r:
                 return r.read()
         except HTTPError as e:
@@ -77,6 +78,15 @@ def exchange_ticks():
         "BTCUSDT": 0.1,
     }
 
+
+# The verified v2.5.15 Python oracle is tick-aware. Reproduce that precision
+# rule here so decimal binary noise cannot turn equality into a missed fill.
+src = inspect.getsource(bt.simulate)
+src = src.replace("H[i]>=pending['entry']", "H[i] >= pending['entry'] - tick*1e-6")
+src = src.replace("L[i]<=pending['entry']", "L[i] <= pending['entry'] + tick*1e-6")
+ns = dict(bt.__dict__)
+exec(src, ns)
+bt.simulate = ns['simulate']
 
 bt.fetch_klines = fetch_klines
 bt.exchange_ticks = exchange_ticks
