@@ -13,7 +13,7 @@ on:
 
 jobs:
   render:
-    runs-on: macos-latest
+    runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
@@ -24,7 +24,7 @@ jobs:
         run: python -m pip install --upgrade pip numpy pillow
       - name: Ensure ffmpeg
         run: |
-          if ! command -v ffmpeg >/dev/null 2>&1; then brew install ffmpeg; fi
+          command -v ffmpeg >/dev/null 2>&1 || sudo apt-get update && sudo apt-get install -y ffmpeg
           ffmpeg -version | head -n 1
       - name: Render video
         run: python .runner/edm_video/render_edm.py
