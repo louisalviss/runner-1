@@ -1,6 +1,10 @@
 name: TikTok MP4 Fallback
 
 on:
+  push:
+    branches: [main]
+    paths:
+      - '.runner/tiktok-fallback-request.txt'
   pull_request:
     branches: [main]
     paths:
@@ -27,7 +31,7 @@ jobs:
           url=pathlib.Path('.runner/tiktok-fallback-request.txt').read_text().splitlines()[0].strip()
           ua='Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Chrome/151 Safari/537.36'
           out={'requested_url':url,'method':'tikwm'}
-          r=requests.post('https://www.tikwm.com/api/',data={'url':url,'hd':'1'},headers={'User-Agent':ua,'Accept':'application/json'},timeout=30)
+          r=requests.get('https://www.tikwm.com/api/',params={'url':url,'hd':'1'},headers={'User-Agent':ua,'Accept':'application/json'},timeout=30)
           out['api_status']=r.status_code
           out['api_content_type']=r.headers.get('content-type')
           data=r.json()
@@ -38,7 +42,14 @@ jobs:
               out['id']=d.get('id'); out['title']=d.get('title'); out['duration']=d.get('duration')
               out['author']=d.get('author'); out['size']=d.get('size'); out['hd_size']=d.get('hd_size')
           attempts=[]
-          for kind,candidate in [('hdplay',d.get('hdplay') if isinstance(d,dict) else None),('play',d.get('play') if isinstance(d,dict) else None),('wmplay',d.get('wmplay') if isinstance(d,dict) else None)]:
+          candidates=[]
+          if isinstance(d,dict):
+              candidates=[('hdplay',d.get('hdplay')),('play',d.get('play')),('wmplay',d.get('wmplay'))]
+              vid=str(d.get('id') or '')
+              if vid:
+                  candidates.append(('predictable_hdplay',f'https://www.tikwm.com/video/media/hdplay/{vid}.mp4'))
+                  candidates.append(('predictable_play',f'https://www.tikwm.com/video/media/play/{vid}.mp4'))
+          for kind,candidate in candidates:
               if not candidate: continue
               if candidate.startswith('/'):
                   candidate='https://www.tikwm.com'+candidate
