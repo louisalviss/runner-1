@@ -1,0 +1,5 @@
+{
+  "target": "https://demo.fingerprint.com/web-scraping",
+  "wrapper": "0.5.8",
+  "purpose": "Compare stock Playwright vs current licensed Cloak binary on Fingerprint scraping prevention demo"
+}
