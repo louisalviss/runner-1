@@ -12,44 +12,33 @@ permissions:
 
 jobs:
   download:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-slim
     timeout-minutes: 8
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
       - name: Resolve and download MP4
         shell: bash
         run: |
           set -euo pipefail
           mkdir -p evidence
-          URL="$(head -n1 .runner/tiktok-fallback-request.txt | tr -d '\r')"
-          printf '%s\n' "$URL" > evidence/request_url.txt
+          python3 -m pip install -q requests
           python3 - <<'PY'
-          import json, pathlib, requests, sys
+          import json, pathlib, requests
           url=pathlib.Path('.runner/tiktok-fallback-request.txt').read_text().splitlines()[0].strip()
           ua='Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Chrome/151 Safari/537.36'
           out={'requested_url':url,'method':'tikwm'}
           r=requests.post('https://www.tikwm.com/api/',data={'url':url,'hd':'1'},headers={'User-Agent':ua,'Accept':'application/json'},timeout=30)
           out['api_status']=r.status_code
           out['api_content_type']=r.headers.get('content-type')
-          try: data=r.json()
-          except Exception:
-              out['raw']=r.text[:4000]
-              pathlib.Path('evidence/result.json').write_text(json.dumps(out,indent=2,ensure_ascii=False))
-              raise
+          data=r.json()
           d=data.get('data') if isinstance(data,dict) else None
           out['code']=data.get('code') if isinstance(data,dict) else None
           out['msg']=data.get('msg') if isinstance(data,dict) else None
           if isinstance(d,dict):
               out['id']=d.get('id'); out['title']=d.get('title'); out['duration']=d.get('duration')
               out['author']=d.get('author'); out['size']=d.get('size'); out['hd_size']=d.get('hd_size')
-          candidates=[]
-          if isinstance(d,dict):
-              candidates=[('hdplay',d.get('hdplay')),('play',d.get('play')),('wmplay',d.get('wmplay'))]
           attempts=[]
-          for kind,candidate in candidates:
+          for kind,candidate in [('hdplay',d.get('hdplay') if isinstance(d,dict) else None),('play',d.get('play') if isinstance(d,dict) else None),('wmplay',d.get('wmplay') if isinstance(d,dict) else None)]:
               if not candidate: continue
               if candidate.startswith('/'):
                   candidate='https://www.tikwm.com'+candidate
@@ -58,8 +47,7 @@ jobs:
                   rec={'kind':kind,'url':candidate,'final_url':rr.url,'status':rr.status_code,'content_type':rr.headers.get('content-type'),'content_length':rr.headers.get('content-length')}
                   attempts.append(rec)
                   if not rr.ok: continue
-                  p=pathlib.Path('evidence/video.mp4')
-                  total=0
+                  p=pathlib.Path('evidence/video.mp4'); total=0
                   with p.open('wb') as f:
                       for chunk in rr.iter_content(1024*256):
                           if not chunk: continue
@@ -67,19 +55,20 @@ jobs:
                           if total>100*1024*1024: raise RuntimeError('video_too_large')
                           f.write(chunk)
                   rec['bytes']=total
-                  if total>100000:
+                  head=p.read_bytes()[:64]
+                  rec['mp4_ftyp']=b'ftyp' in head
+                  if total>100000 and rec['mp4_ftyp']:
                       out['downloaded']=rec
                       break
               except Exception as e:
                   attempts.append({'kind':kind,'url':candidate,'error':f'{type(e).__name__}: {e}'})
           out['attempts']=attempts
           pathlib.Path('evidence/result.json').write_text(json.dumps(out,indent=2,ensure_ascii=False))
-          if not pathlib.Path('evidence/video.mp4').exists() or pathlib.Path('evidence/video.mp4').stat().st_size<100000:
-              raise SystemExit('NO_MP4_DOWNLOADED')
+          p=pathlib.Path('evidence/video.mp4')
+          if not p.exists() or p.stat().st_size<100000 or b'ftyp' not in p.read_bytes()[:64]:
+              raise SystemExit('NO_VALID_MP4_DOWNLOADED')
+          print(json.dumps(out,ensure_ascii=False,indent=2))
           PY
-          ffprobe -v error -show_entries format=format_name,duration,size,bit_rate -show_entries stream=codec_type,codec_name,width,height -of json evidence/video.mp4 > evidence/ffprobe.json
-          cat evidence/result.json
-          cat evidence/ffprobe.json
       - name: Upload MP4
         uses: actions/upload-artifact@v4
         with:
