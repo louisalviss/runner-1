@@ -1,0 +1,36 @@
+name: Render EDM Countdown Video
+
+on:
+  push:
+    paths:
+      - '.runner/edm_video/**'
+      - '.github/workflows/edm-video-render.yml'
+  workflow_dispatch:
+
+jobs:
+  render:
+    runs-on: macos-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install Python deps
+        run: python -m pip install --upgrade pip numpy pillow
+      - name: Ensure ffmpeg
+        run: |
+          if ! command -v ffmpeg >/dev/null 2>&1; then brew install ffmpeg; fi
+          ffmpeg -version | head -n 1
+      - name: Render video
+        run: python .runner/edm_video/render_edm.py
+      - name: Validate output
+        run: |
+          test -s edm-video-output/edm_nostalgia_top10_silent.mp4
+          ffprobe -v error -show_entries format=duration,size -show_streams edm-video-output/edm_nostalgia_top10_silent.mp4
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: edm-nostalgia-top10
+          path: edm-video-output/
+          retention-days: 7
