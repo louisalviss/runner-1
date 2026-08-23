@@ -5,6 +5,10 @@ on:
     paths:
       - '.runner/edm_video/**'
       - '.github/workflows/edm-video-render.yml'
+  pull_request:
+    paths:
+      - '.runner/edm_video/**'
+      - '.github/workflows/edm-video-render.yml'
   workflow_dispatch:
 
 jobs:
