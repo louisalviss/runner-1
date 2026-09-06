@@ -1,0 +1,4 @@
+{
+  "mode": "noop",
+  "action": "outside-canonical-window"
+}
