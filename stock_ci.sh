@@ -37,26 +37,29 @@ PY
       ;;
   esac
 else
-  read et_hour et_minute <<<"$(python3 - <<'PY'
+  # Scheduled jobs can start hours after their nominal cron on GitHub-hosted
+  # runners. Resolve by the intended cron plus the New York UTC offset for
+  # today's market date, never by the wall clock at runner start.
+  ny_offset_hours="$(python3 - <<'PY'
 from datetime import datetime, timezone
 from zoneinfo import ZoneInfo
 x = datetime.now(timezone.utc).astimezone(ZoneInfo('America/New_York'))
-print(x.hour, x.minute)
+print(int(x.utcoffset().total_seconds() // 3600))
 PY
 )"
-  if [[ "$event_schedule" == "30 14 * * 1-5" || "$event_schedule" == "30 15 * * 1-5" ]]; then
-    [[ "$et_hour" == "10" && "$et_minute" -ge 30 ]] && mode=main || mode=noop
-  elif [[ "$event_schedule" == "45 16 * * 1-5" || "$event_schedule" == "45 17 * * 1-5" ]]; then
-    [[ "$et_hour" == "12" && "$et_minute" -ge 45 ]] && mode=mid || mode=noop
-  elif [[ "$event_schedule" == "45 19 * * 1-5" || "$event_schedule" == "45 20 * * 1-5" ]]; then
-    [[ "$et_hour" == "15" && "$et_minute" -ge 45 ]] && mode=preclose || mode=noop
-  elif [[ "$event_schedule" == "15 22 * * 1-5" ]]; then
-    # Canonical post-close schedule is fixed in Vietnam time, not New York time.
-    # 22:15 UTC Monday-Friday = 05:15 Asia/Ho_Chi_Minh Tuesday-Saturday year-round.
-    mode=smoothness
-  else
-    mode=noop
-  fi
+  case "$event_schedule" in
+    "30 14 * * 1-5") [[ "$ny_offset_hours" == "-4" ]] && mode=main || mode=noop ;;
+    "30 15 * * 1-5") [[ "$ny_offset_hours" == "-5" ]] && mode=main || mode=noop ;;
+    "45 16 * * 1-5") [[ "$ny_offset_hours" == "-4" ]] && mode=mid || mode=noop ;;
+    "45 17 * * 1-5") [[ "$ny_offset_hours" == "-5" ]] && mode=mid || mode=noop ;;
+    "45 19 * * 1-5") [[ "$ny_offset_hours" == "-4" ]] && mode=preclose || mode=noop ;;
+    "45 20 * * 1-5") [[ "$ny_offset_hours" == "-5" ]] && mode=preclose || mode=noop ;;
+    "15 22 * * 1-5")
+      # Canonical post-close schedule is fixed in Vietnam time.
+      mode=smoothness
+      ;;
+    *) mode=noop ;;
+  esac
 fi
 
 printf '%s\n' "$mode" > diagnostics/runner1_resolved_mode.txt
