@@ -1,16 +1,16 @@
 {
   "ok": true,
-  "generated_utc": "2026-08-18T16:48:55.554556+00:00",
-  "stage1_qualified_count": 354,
+  "generated_utc": "2026-10-04T11:58:33.258400+00:00",
+  "stage1_qualified_count": 351,
   "stage1_diagnostics": {
-    "total_count": 5823,
-    "parsed_count": 5823,
+    "total_count": 5843,
+    "parsed_count": 5843,
     "exchange_counts": {
-      "NASDAQ": 3517,
-      "NYSE": 2306
+      "NASDAQ": 3532,
+      "NYSE": 2311
     }
   },
   "bar_probe_symbol": "MSFT",
   "bar_probe_count": 150,
-  "bar_probe_session_date_us": "2026-08-18"
+  "bar_probe_session_date_us": "2026-10-02"
 }
