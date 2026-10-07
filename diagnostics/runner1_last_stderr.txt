@@ -2,9 +2,9 @@ Traceback (most recent call last):
   File "/home/runner/work/runner-1/runner-1/work/stock_runner_entry.py", line 120, in <module>
     raise SystemExit(runner.main())
                      ^^^^^^^^^^^^^
-  File "/home/runner/work/runner-1/runner-1/work/stock_runner.py", line 646, in main
-    result = run_smoothness()
-             ^^^^^^^^^^^^^^^^
-  File "/home/runner/work/runner-1/runner-1/work/stock_runner.py", line 584, in run_smoothness
-    raise RuntimeError(
-RuntimeError: smoothness incomplete failures=364 wrong_session=364 insufficient=364
+  File "/home/runner/work/runner-1/runner-1/work/stock_runner.py", line 648, in main
+    result = run_checkpoint(mode)
+             ^^^^^^^^^^^^^^^^^^^^
+  File "/home/runner/work/runner-1/runner-1/work/stock_runner.py", line 212, in run_checkpoint
+    raise RuntimeError(f"{mode} requested while NYSE regular session is closed")
+RuntimeError: main requested while NYSE regular session is closed
