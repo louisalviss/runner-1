@@ -1,0 +1,18 @@
+[Unit]
+Description=Wave Rider Stock Stage-1 preclose VPS fallback
+Wants=network-online.target
+After=network-online.target
+[Service]
+Type=oneshot
+User=root
+WorkingDirectory=/
+ExecStartPre=/usr/local/libexec/wr-preclose-fallback --self-test
+ExecStart=/usr/local/libexec/wr-preclose-fallback
+TimeoutStartSec=9min
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=read-only
+ReadWritePaths=/var/lib/wr-preclose-fallback
+RestrictSUIDSGID=true
+LockPersonality=true
