@@ -7,7 +7,7 @@ Purpose: protect canonical runner-1/o/1 Stage-1 preclose from delayed GitHub sch
 - NYSE market calendar must show an open regular session; holidays and early close are blocked. No late catch-up (Persistent=false).
 - If a final preclose slot for the current NY session already exists, do nothing.
 - Otherwise clone latest runner-1 main into a disposable directory, run the same stock_ci.sh with EVENT_NAME=workflow_dispatch and INPUT_M=3, and require updated o/1 to match remote Git HEAD after push.
-- Python environment uses a dedicated venv; no credentials in repository or script.
+- Python environment uses a dedicated venv; no credentials in repository or script. Before importing executable code from clone, a deploy-approved SHA-256 fingerprint of immutable Git tree entries is checked. Mutable o/ and diagnostics/ records are excluded. Code changes fail closed until reviewed fingerprint is updated on VPS.
 - Status: /var/lib/wr-preclose-fallback/last-status.json; diagnostic logs: journalctl -u wr-preclose-fallback.service.
 - Lock ensures no two VPS invocations collide; two attempts provide redundancy.
 - If upstream Stage-1 or GitHub push fails, fail closed; do not invent a preclose snapshot.
@@ -22,6 +22,8 @@ Install:
   systemctl daemon-reload
   systemctl enable --now wr-preclose-fallback.timer
   systemctl start wr-preclose-fallback.service   # outside window is a safe skip
+
+An operator must provision /etc/wr-preclose-fallback/trusted-code.sha256 after an accepted code revision. Never regenerate automatically from unreviewed remote main. Confirm with /usr/local/libexec/wr-preclose-fallback --verify-source (read-only clone).
 
 Check:
   /usr/local/libexec/wr-preclose-fallback --self-test
