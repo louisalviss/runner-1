@@ -1,0 +1,17 @@
+{
+  "mode": "probe",
+  "ok": true,
+  "generated_utc": "2026-10-11T19:29:16.180966+00:00",
+  "stage1_qualified_count": 358,
+  "stage1_diagnostics": {
+    "total_count": 5826,
+    "parsed_count": 5826,
+    "exchange_counts": {
+      "NASDAQ": 3528,
+      "NYSE": 2298
+    }
+  },
+  "bar_probe_symbol": "MSFT",
+  "bar_probe_count": 150,
+  "bar_probe_session_date_us": "2026-10-09"
+}
