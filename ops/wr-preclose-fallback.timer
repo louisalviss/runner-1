@@ -1,0 +1,11 @@
+[Unit]
+Description=Wave Rider preclose fallback (New York session, DST aware)
+[Timer]
+OnCalendar=Mon..Fri *-*-* 15:47:00 America/New_York
+OnCalendar=Mon..Fri *-*-* 15:52:00 America/New_York
+AccuracySec=15s
+Persistent=false
+RandomizedDelaySec=0
+Unit=wr-preclose-fallback.service
+[Install]
+WantedBy=timers.target
