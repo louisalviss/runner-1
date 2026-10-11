@@ -5,12 +5,13 @@ import argparse
 import base64
 import json
 import math
+import os
 import random
 import re
 import string
 import time
 import zlib
-from datetime import datetime, timezone
+from datetime import date, datetime, timezone
 from pathlib import Path
 from statistics import median
 from typing import Any, Iterable
@@ -534,6 +535,29 @@ def run_smoothness() -> dict[str, Any]:
     if not final or not final.get("finalized") or final.get("finalized_by_mode") != "preclose":
         return {"action": "waiting-for-final"}
     session = str(final.get("session_date_us") or "")
+    # Automated market scans must never spend minutes downloading bars for a
+    # stale Stage-1 session. Explicit manual research can still replay history.
+    if os.environ.get("EVENT_NAME", "").strip() == "schedule":
+        try:
+            session_day = date.fromisoformat(session)
+        except ValueError as exc:
+            raise RuntimeError(f"smoothness invalid Stage-1 session date: {session!r}") from exc
+        current_day = now_utc().astimezone(NY).date()
+        session_age_days = (current_day - session_day).days
+        if not 0 <= session_age_days <= 7:
+            write_diag("runner1_smoothness_freshness_failure.json", {
+                "status": "blocked_stale_stage1",
+                "stage1_session_date_us": session,
+                "market_date_us": current_day.isoformat(),
+                "session_age_days": session_age_days,
+                "max_age_days": 7,
+                "reason": "scheduled_smoothness_requires_fresh_stage1",
+            })
+            raise RuntimeError(
+                f"smoothness blocked: Stage-1 session {session} is "
+                f"{session_age_days} days from US market date {current_day}; "
+                "refresh Stage-1 before the scheduled 3m data fetch"
+            )
     existing = read_slot("2")
     if (
         existing
