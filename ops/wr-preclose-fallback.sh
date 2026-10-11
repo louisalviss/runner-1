@@ -38,16 +38,47 @@ PY
 fi
 et_day="$(TZ=America/New_York date +%u)"
 et_clock="$(TZ=America/New_York date +%H%M)"
-if (( et_day > 5 || 10#$et_clock < 1545 || 10#$et_clock > 1559 )); then
-  echo "WR_PRE_CLOSE=SKIP_OUTSIDE_WINDOW clock=$et_clock"
-  write_status skip outside_new_york_preclose_window
-  exit 0
+if [[ "${1:-}" != "--verify-source" ]]; then
+  if (( et_day > 5 || 10#$et_clock < 1545 || 10#$et_clock > 1559 )); then
+    echo "WR_PRE_CLOSE=SKIP_OUTSIDE_WINDOW clock=$et_clock"
+    write_status skip outside_new_york_preclose_window
+    exit 0
+  fi
 fi
 workdir="$(mktemp -d "$STATE_DIR/work.XXXXXXXX")"
 trap 'rm -rf -- "$workdir"' EXIT
 "$GH_BIN" repo clone louisalviss/runner-1 "$workdir/runner-1" -- --depth=1 --quiet
 cd "$workdir/runner-1"
 git config --local credential.helper '!gh auth git-credential'
+# Code loaded from public GitHub must match a fingerprint approved at deploy
+# time. State/diagnostics are mutable, all other repo content is immutable.
+TRUSTED_SHA_FILE="${WR_FALLBACK_TRUSTED_SHA256_PATH:-/etc/wr-preclose-fallback/trusted-code.sha256}"
+if [[ ! -s "$TRUSTED_SHA_FILE" ]]; then
+  write_status failure trusted_code_fingerprint_missing
+  echo 'WR_PRE_CLOSE=BLOCKED_NO_TRUSTED_FINGERPRINT' >&2
+  exit 51
+fi
+approved="$(tr -d '[:space:]' < "$TRUSTED_SHA_FILE")"
+actual="$("$PY_BIN" - <<'PYHASH'
+import hashlib,subprocess
+tree=subprocess.check_output(['git','ls-tree','-r','--full-tree','HEAD'])
+immutable=[
+ line for line in tree.splitlines(keepends=True)
+ if not line.split(b'\t',1)[-1].startswith((b'o/',b'diagnostics/'))
+]
+print(hashlib.sha256(b''.join(immutable)).hexdigest())
+PYHASH
+)"
+if [[ ! "$approved" =~ ^[0-9a-f]{64}$ || "$approved" != "$actual" ]]; then
+  write_status failure unapproved_git_source
+  echo "WR_PRE_CLOSE=BLOCKED_UNAPPROVED_SOURCE actual=$actual" >&2
+  exit 52
+fi
+echo "WR_PRE_CLOSE=SOURCE_FINGERPRINT_PASS sha=$actual"
+if [[ "${1:-}" == "--verify-source" ]]; then
+  echo 'WR_PRE_CLOSE_SOURCE_VERIFY_NO_EXECUTION=PASS'
+  exit 0
+fi
 export PATH="$(dirname "$PY_BIN"):$PATH"
 set +e
 "$PY_BIN" - <<'PY'
