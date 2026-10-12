@@ -1,7 +1,0 @@
-{
-  "mode": "preclose",
-  "action": "published",
-  "session_date_us": "2026-10-12",
-  "qualified_count": 350,
-  "union_count": 350
-}
