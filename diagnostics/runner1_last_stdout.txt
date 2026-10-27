@@ -1,0 +1,7 @@
+{
+  "mode": "main",
+  "action": "published",
+  "session_date_us": "2026-10-27",
+  "qualified_count": 369,
+  "union_count": 369
+}
