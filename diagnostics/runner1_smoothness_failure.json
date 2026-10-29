@@ -1,6 +1,6 @@
 {
-  "at": "2026-10-28T01:18:23.865574+00:00",
-  "session_date_us": "2026-10-27",
+  "at": "2026-10-29T01:47:00.542298+00:00",
+  "session_date_us": "2026-10-28",
   "fetch_failures": {
     "A": "no 3m bars returned",
     "AAL": "no 3m bars returned",
@@ -95,6 +95,7 @@
     "CRCL": "no 3m bars returned",
     "CRDO": "no 3m bars returned",
     "CRH": "no 3m bars returned",
+    "CRL": "no 3m bars returned",
     "CRM": "no 3m bars returned",
     "CRWD": "no 3m bars returned",
     "CRWV": "no 3m bars returned",
@@ -102,7 +103,6 @@
     "CSX": "no 3m bars returned",
     "CTAS": "no 3m bars returned",
     "CTSH": "no 3m bars returned",
-    "CTVA": "no 3m bars returned",
     "CVNA": "no 3m bars returned",
     "CVS": "no 3m bars returned",
     "CVX": "no 3m bars returned",
@@ -133,6 +133,7 @@
     "FICO": "no 3m bars returned",
     "FITB": "no 3m bars returned",
     "FIX": "no 3m bars returned",
+    "FLEX": "no 3m bars returned",
     "FTNT": "no 3m bars returned",
     "GD": "no 3m bars returned",
     "GE": "no 3m bars returned",
@@ -284,6 +285,7 @@
     "REGN": "no 3m bars returned",
     "RKLB": "no 3m bars returned",
     "RKT": "no 3m bars returned",
+    "ROP": "no 3m bars returned",
     "ROST": "no 3m bars returned",
     "RTX": "no 3m bars returned",
     "RVMD": "no 3m bars returned",
@@ -354,6 +356,7 @@
     "VRTX": "no 3m bars returned",
     "VST": "no 3m bars returned",
     "VZ": "no 3m bars returned",
+    "WAT": "no 3m bars returned",
     "WDAY": "no 3m bars returned",
     "WDC": "no 3m bars returned",
     "WELL": "no 3m bars returned",
@@ -369,7 +372,8 @@
     "WMT": "no 3m bars returned",
     "WULF": "no 3m bars returned",
     "XEL": "no 3m bars returned",
-    "XOM": "no 3m bars returned"
+    "XOM": "no 3m bars returned",
+    "ZS": "no 3m bars returned"
   },
   "wrong_session": {
     "A": null,
@@ -465,6 +469,7 @@
     "CRCL": null,
     "CRDO": null,
     "CRH": null,
+    "CRL": null,
     "CRM": null,
     "CRWD": null,
     "CRWV": null,
@@ -472,7 +477,6 @@
     "CSX": null,
     "CTAS": null,
     "CTSH": null,
-    "CTVA": null,
     "CVNA": null,
     "CVS": null,
     "CVX": null,
@@ -503,6 +507,7 @@
     "FICO": null,
     "FITB": null,
     "FIX": null,
+    "FLEX": null,
     "FTNT": null,
     "GD": null,
     "GE": null,
@@ -654,6 +659,7 @@
     "REGN": null,
     "RKLB": null,
     "RKT": null,
+    "ROP": null,
     "ROST": null,
     "RTX": null,
     "RVMD": null,
@@ -724,6 +730,7 @@
     "VRTX": null,
     "VST": null,
     "VZ": null,
+    "WAT": null,
     "WDAY": null,
     "WDC": null,
     "WELL": null,
@@ -739,7 +746,8 @@
     "WMT": null,
     "WULF": null,
     "XEL": null,
-    "XOM": null
+    "XOM": null,
+    "ZS": null
   },
   "insufficient": [
     "A",
@@ -835,6 +843,7 @@
     "CRCL",
     "CRDO",
     "CRH",
+    "CRL",
     "CRM",
     "CRWD",
     "CRWV",
@@ -842,7 +851,6 @@
     "CSX",
     "CTAS",
     "CTSH",
-    "CTVA",
     "CVNA",
     "CVS",
     "CVX",
@@ -873,6 +881,7 @@
     "FICO",
     "FITB",
     "FIX",
+    "FLEX",
     "FTNT",
     "GD",
     "GE",
@@ -1024,6 +1033,7 @@
     "REGN",
     "RKLB",
     "RKT",
+    "ROP",
     "ROST",
     "RTX",
     "RVMD",
@@ -1094,6 +1104,7 @@
     "VRTX",
     "VST",
     "VZ",
+    "WAT",
     "WDAY",
     "WDC",
     "WELL",
@@ -1109,7 +1120,8 @@
     "WMT",
     "WULF",
     "XEL",
-    "XOM"
+    "XOM",
+    "ZS"
   ],
-  "stage1_union_count": 369
+  "stage1_union_count": 372
 }
