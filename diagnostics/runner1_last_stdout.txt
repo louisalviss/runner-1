@@ -1,7 +1,7 @@
 {
-  "mode": "main",
+  "mode": "preclose",
   "action": "published",
   "session_date_us": "2026-10-30",
-  "qualified_count": 358,
-  "union_count": 358
+  "qualified_count": 360,
+  "union_count": 360
 }
