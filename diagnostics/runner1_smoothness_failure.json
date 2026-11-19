@@ -1,6 +1,6 @@
 {
-  "at": "2026-11-18T03:42:20.017842+00:00",
-  "session_date_us": "2026-11-17",
+  "at": "2026-11-19T03:22:12.282803+00:00",
+  "session_date_us": "2026-11-18",
   "fetch_failures": {
     "AAL": "no 3m bars returned",
     "AAOI": "no 3m bars returned",
@@ -146,6 +146,7 @@
     "GEV": "no 3m bars returned",
     "GILD": "no 3m bars returned",
     "GLW": "no 3m bars returned",
+    "GM": "no 3m bars returned",
     "GOOG": "no 3m bars returned",
     "GOOGL": "no 3m bars returned",
     "GOOGM": "no 3m bars returned",
@@ -208,6 +209,7 @@
     "MCK": "no 3m bars returned",
     "MCO": "no 3m bars returned",
     "MDB": "no 3m bars returned",
+    "MDLN": "no 3m bars returned",
     "MDLZ": "no 3m bars returned",
     "MDT": "no 3m bars returned",
     "MELI": "no 3m bars returned",
@@ -312,7 +314,6 @@
     "SPOT": "no 3m bars returned",
     "STM": "no 3m bars returned",
     "STX": "no 3m bars returned",
-    "SWKS": "no 3m bars returned",
     "SYK": "no 3m bars returned",
     "T": "no 3m bars returned",
     "TD": "no 3m bars returned",
@@ -322,7 +323,6 @@
     "TER": "no 3m bars returned",
     "TGT": "no 3m bars returned",
     "TJX": "no 3m bars returned",
-    "TLN": "no 3m bars returned",
     "TM": "no 3m bars returned",
     "TMO": "no 3m bars returned",
     "TMUS": "no 3m bars returned",
@@ -346,6 +346,7 @@
     "USB": "no 3m bars returned",
     "V": "no 3m bars returned",
     "VEEV": "no 3m bars returned",
+    "VIK": "no 3m bars returned",
     "VLO": "no 3m bars returned",
     "VRT": "no 3m bars returned",
     "VRTX": "no 3m bars returned",
@@ -368,8 +369,7 @@
     "WULF": "no 3m bars returned",
     "XEL": "no 3m bars returned",
     "XOM": "no 3m bars returned",
-    "XYZ": "no 3m bars returned",
-    "ZS": "no 3m bars returned"
+    "XYZ": "no 3m bars returned"
   },
   "wrong_session": {
     "AAL": null,
@@ -516,6 +516,7 @@
     "GEV": null,
     "GILD": null,
     "GLW": null,
+    "GM": null,
     "GOOG": null,
     "GOOGL": null,
     "GOOGM": null,
@@ -578,6 +579,7 @@
     "MCK": null,
     "MCO": null,
     "MDB": null,
+    "MDLN": null,
     "MDLZ": null,
     "MDT": null,
     "MELI": null,
@@ -682,7 +684,6 @@
     "SPOT": null,
     "STM": null,
     "STX": null,
-    "SWKS": null,
     "SYK": null,
     "T": null,
     "TD": null,
@@ -692,7 +693,6 @@
     "TER": null,
     "TGT": null,
     "TJX": null,
-    "TLN": null,
     "TM": null,
     "TMO": null,
     "TMUS": null,
@@ -716,6 +716,7 @@
     "USB": null,
     "V": null,
     "VEEV": null,
+    "VIK": null,
     "VLO": null,
     "VRT": null,
     "VRTX": null,
@@ -738,8 +739,7 @@
     "WULF": null,
     "XEL": null,
     "XOM": null,
-    "XYZ": null,
-    "ZS": null
+    "XYZ": null
   },
   "insufficient": [
     "AAL",
@@ -886,6 +886,7 @@
     "GEV",
     "GILD",
     "GLW",
+    "GM",
     "GOOG",
     "GOOGL",
     "GOOGM",
@@ -948,6 +949,7 @@
     "MCK",
     "MCO",
     "MDB",
+    "MDLN",
     "MDLZ",
     "MDT",
     "MELI",
@@ -1052,7 +1054,6 @@
     "SPOT",
     "STM",
     "STX",
-    "SWKS",
     "SYK",
     "T",
     "TD",
@@ -1062,7 +1063,6 @@
     "TER",
     "TGT",
     "TJX",
-    "TLN",
     "TM",
     "TMO",
     "TMUS",
@@ -1086,6 +1086,7 @@
     "USB",
     "V",
     "VEEV",
+    "VIK",
     "VLO",
     "VRT",
     "VRTX",
@@ -1108,8 +1109,7 @@
     "WULF",
     "XEL",
     "XOM",
-    "XYZ",
-    "ZS"
+    "XYZ"
   ],
-  "stage1_union_count": 368
+  "stage1_union_count": 369
 }
