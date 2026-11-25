@@ -1,6 +1,6 @@
 {
-  "at": "2026-11-24T05:58:40.198146+00:00",
-  "session_date_us": "2026-11-23",
+  "at": "2026-11-25T04:52:47.468865+00:00",
+  "session_date_us": "2026-11-24",
   "fetch_failures": {
     "AAL": "no 3m bars returned",
     "AAOI": "no 3m bars returned",
@@ -36,7 +36,6 @@
     "AVGO": "no 3m bars returned",
     "AXON": "no 3m bars returned",
     "AXP": "no 3m bars returned",
-    "AXTI": "no 3m bars returned",
     "AZN": "no 3m bars returned",
     "AZO": "no 3m bars returned",
     "BA": "no 3m bars returned",
@@ -77,7 +76,6 @@
     "CBRS": "no 3m bars returned",
     "CCI": "no 3m bars returned",
     "CCL": "no 3m bars returned",
-    "CDE": "no 3m bars returned",
     "CDNS": "no 3m bars returned",
     "CEG": "no 3m bars returned",
     "CI": "no 3m bars returned",
@@ -233,10 +231,10 @@
     "MS/PO": "no 3m bars returned",
     "MS/PP": "no 3m bars returned",
     "MS/PQ": "no 3m bars returned",
+    "MSCI": "no 3m bars returned",
     "MSFT": "no 3m bars returned",
     "MSI": "no 3m bars returned",
     "MSTR": "no 3m bars returned",
-    "MTSI": "no 3m bars returned",
     "MU": "no 3m bars returned",
     "MUFG": "no 3m bars returned",
     "NBIS": "no 3m bars returned",
@@ -271,7 +269,6 @@
     "PLD": "no 3m bars returned",
     "PLTR": "no 3m bars returned",
     "PM": "no 3m bars returned",
-    "PNC": "no 3m bars returned",
     "PSX": "no 3m bars returned",
     "PWR": "no 3m bars returned",
     "PYPL": "no 3m bars returned",
@@ -364,8 +361,7 @@
     "WULF": "no 3m bars returned",
     "XEL": "no 3m bars returned",
     "XOM": "no 3m bars returned",
-    "XYZ": "no 3m bars returned",
-    "ZS": "no 3m bars returned"
+    "XYZ": "no 3m bars returned"
   },
   "wrong_session": {
     "AAL": null,
@@ -402,7 +398,6 @@
     "AVGO": null,
     "AXON": null,
     "AXP": null,
-    "AXTI": null,
     "AZN": null,
     "AZO": null,
     "BA": null,
@@ -443,7 +438,6 @@
     "CBRS": null,
     "CCI": null,
     "CCL": null,
-    "CDE": null,
     "CDNS": null,
     "CEG": null,
     "CI": null,
@@ -599,10 +593,10 @@
     "MS/PO": null,
     "MS/PP": null,
     "MS/PQ": null,
+    "MSCI": null,
     "MSFT": null,
     "MSI": null,
     "MSTR": null,
-    "MTSI": null,
     "MU": null,
     "MUFG": null,
     "NBIS": null,
@@ -637,7 +631,6 @@
     "PLD": null,
     "PLTR": null,
     "PM": null,
-    "PNC": null,
     "PSX": null,
     "PWR": null,
     "PYPL": null,
@@ -730,8 +723,7 @@
     "WULF": null,
     "XEL": null,
     "XOM": null,
-    "XYZ": null,
-    "ZS": null
+    "XYZ": null
   },
   "insufficient": [
     "AAL",
@@ -768,7 +760,6 @@
     "AVGO",
     "AXON",
     "AXP",
-    "AXTI",
     "AZN",
     "AZO",
     "BA",
@@ -809,7 +800,6 @@
     "CBRS",
     "CCI",
     "CCL",
-    "CDE",
     "CDNS",
     "CEG",
     "CI",
@@ -965,10 +955,10 @@
     "MS/PO",
     "MS/PP",
     "MS/PQ",
+    "MSCI",
     "MSFT",
     "MSI",
     "MSTR",
-    "MTSI",
     "MU",
     "MUFG",
     "NBIS",
@@ -1003,7 +993,6 @@
     "PLD",
     "PLTR",
     "PM",
-    "PNC",
     "PSX",
     "PWR",
     "PYPL",
@@ -1096,8 +1085,7 @@
     "WULF",
     "XEL",
     "XOM",
-    "XYZ",
-    "ZS"
+    "XYZ"
   ],
-  "stage1_union_count": 364
+  "stage1_union_count": 361
 }
