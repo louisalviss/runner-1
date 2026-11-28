@@ -1,5 +1,5 @@
 {
-  "at": "2026-11-27T04:13:28.412069+00:00",
+  "at": "2026-11-28T03:53:25.219973+00:00",
   "session_date_us": "2026-11-25",
   "fetch_failures": {
     "AAL": "no 3m bars returned",
@@ -735,7 +735,8 @@
     "WULF": null,
     "XEL": null,
     "XOM": null,
-    "XYZ": null
+    "XYZ": null,
+    "ZS": "2026-11-27"
   },
   "insufficient": [
     "AAL",
